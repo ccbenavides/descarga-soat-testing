@@ -1,9 +1,14 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useRef, useState } from "react";
 import { useMutation } from "react-query";
+import Header from "../components/Header";
+import Banner from "../components/Banner";
+import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
 
-export default function App() {
+export default function Landing() {
   const [plateSelected, setPlateSelected] = useState("");
+  const navigate = useNavigate();
   const refs = Array(6).fill(0).map(() => useRef<HTMLInputElement>(null));
 
   const mutation = useMutation(postSolicitud, {
@@ -38,8 +43,8 @@ export default function App() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     mutation.mutate(plateSelected, {
-      onSuccess: (data) => {
-        console.log(data)
+      onSuccess: () => {
+        navigate("/resumen")
       }
     })
 
@@ -47,19 +52,10 @@ export default function App() {
 
 
 
-  return <section className="">
-    <div className="flex justify-center items-center py-4">
-      <img src="/logo-pacifico.webp" className="w-[150px]" alt="logo-pacifico" />
-      <span className="text-2xl px-2 text-cyan-600 mb-1"> | </span>
-      <span className="text-xl font-bold text-cyan-600">SOAT</span>
-    </div>
-    <div className="bg-pacifico flex flex-col justify-center items-center py-[30px]">
-      <div className="text-center px-5">
-        <img src="/soat.svg" alt="soat-icono" className="mx-auto w-[100px] mb-2" />
-        <p className="text-xl font-semibold text-white mb-4">Consulta y descarga tu SOAT Electrónico</p>
-        <p className="text-sm text-gray-200 max-w-[500px] mx-auto">Recuerda que aquí podrás consultar tu SOAT Virtual de cualquier empresa de seguro como Interseguro, Rimac, La Positiva, Pacífico, Mapfre, Protecta y Crecer</p>
-      </div>
-    </div>
+  return <section className="mb-10">
+    <Header />
+    <Banner />
+    {mutation.isLoading && <Loading />}
     <div className="mt-7">
       <h2 className="text-center text-cyan-600 text-3xl font-semibold">Ingresa tu placa</h2>
       <form action="#" onSubmit={handleSubmit}>
@@ -68,7 +64,7 @@ export default function App() {
             <input
               key={index}
               type="text"
-              className="border-2 border-gray-400/70 rounded text-3xl lg:text-[45px] w-[19%] text-center p-3 lg:p-3 uppercase"
+              className="border-2 border-gray-400/70 rounded text-3xl lg:text-[45px] w-[19%] text-center p-3 lg:p-2 uppercase"
               ref={ref}
               maxLength={1}
               onChange={handleChange(index)}
