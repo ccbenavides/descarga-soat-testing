@@ -1,27 +1,22 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useRef, useState } from "react";
-import { useMutation } from "react-query";
 import Header from "../components/Header";
 import Banner from "../components/Banner";
 import { useNavigate } from "react-router-dom";
 import Loading from "../components/Loading";
+import { usePostSolicitud } from "../hooks/usePostSolicitud";
 
 export default function Landing() {
   const [plateSelected, setPlateSelected] = useState("");
   const navigate = useNavigate();
-  const refs = Array(6).fill(0).map(() => useRef<HTMLInputElement>(null));
+  const refs = Array.from({ length: 6 }).map(() => useRef<HTMLInputElement>(null));
+  const mutation = usePostSolicitud();
 
-  const mutation = useMutation(postSolicitud, {
-    onSuccess: () => {
-      // Handle success state
-      console.log('Success!');
-    },
-    onError: () => {
-      // Handle error state
-      console.log('Error!');
-    },
-  });
-
+  /**
+   * Handles the change event for the input fields.
+   * @param index - The index of the input field.
+   * @param event - The change event object.
+   */
   const handleChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length === 1 && index < refs.length - 1) {
       refs[index + 1].current?.focus();
@@ -34,31 +29,41 @@ export default function Landing() {
     }
   };
 
+  /**
+   * Handles the keydown event for the input field at the specified index.
+   * If the Backspace key is pressed and the current input value is empty,
+   * it focuses on the previous input field.
+   * @param index - The index of the input field.
+   * @param event - The keyboard event.
+   */
   const handleKeyDown = (index: number) => (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Backspace' && event.currentTarget.value === '' && index > 0) {
       refs[index - 1].current?.focus();
     }
   };
 
+  /**
+   * Maneja el envío del formulario.
+   * 
+   * @param event - El evento de envío del formulario.
+   */
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     mutation.mutate(plateSelected, {
       onSuccess: () => {
+        console.log("ha llegado hasta aquí???")
         navigate("/resumen")
       }
     })
-
   }
-
-
 
   return <section className="mb-10">
     <Header />
     <Banner />
-    {mutation.isLoading && <Loading />}
+    {mutation.isPending && <Loading />}
     <div className="mt-7">
       <h2 className="text-center text-cyan-600 text-3xl font-semibold">Ingresa tu placa</h2>
-      <form action="#" onSubmit={handleSubmit}>
+      <form action="#" onSubmit={handleSubmit} role="form">
         <div className="flex gap-x-3 lg:gap-x-5 max-w-[400px] lg:max-w-[500px] mx-auto mt-7">
           {refs.map((ref, index) => (
             <input
@@ -98,24 +103,3 @@ export default function Landing() {
 }
 
 
-const postSolicitud = async (plate: string) => {
-  console.log(plate)
-  const response = await fetch('https://apimgmt-pacificodesa.azure-api.net/ne-solicitudes-soat-gen/venta/v1/solicitudes/5ce9af30-1271-441a-9fb1-a393b257d630', {
-    method: 'GET',
-    headers: {
-      'Ocp-Apim-Subscription-Key': '926ec90111ea4d3bb44699fa01f01c1b',
-      'Transaccion-Id': '21e22474-d31f-4119-8472-d9d448727cfe',
-      'Aplicacion-Id': 'ECommerceSOAT',
-      'Nombre-Aplicacion': 'app1234',
-      'Usuario-Consumidor-Id': 'user1234',
-      'Nombre-Servicio-Consumidor': 'user1234',
-      'Token-Seguridad': '21e22474-d31f-4119-8472-d9d448727cfe',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-
-  return response.json();
-};

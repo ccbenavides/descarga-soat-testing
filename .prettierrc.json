@@ -1,0 +1,8 @@
+{
+  "singleQuote": false,
+  "semi": false,
+  "trailingComma": "none",
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderParserPlugins": ["jsx", "typescript", "decorators-legacy"]
+}
